@@ -61,13 +61,14 @@ component name = "fogBugzTool" output = "false"
 	* @hint list cases
 	* @token the api token for the session
 	* @domain your company domain
+	* @max the maximum amount of cases to return
 	*/
-	public struct function actionCaseList(required string token, required string domain)
+	public struct function actionCaseList(required string token, required string domain, numeric max = 10)
 	{
+		if(arguments.max > 100000) {throw(message = "You cannot list more than 100000 cases.", type = "Invalid maximum");}
 		try
 		{
-			var column_lookup = "ixBug,ixBugParent,ixBugChildren,tags,fOpen,sTitle,sOriginalTitle,sLatestTextSummary,ixBugEventLatestText,ixProject,sProject,ixArea,ixGroup,ixPersonAssignedTo,sPersonAssignedTo,sEmailAssignedTo,ixPersonOpenedBy,ixPersonClosedBy,isPersonResolvedBy,ixPersonLastEditedBy,ixStatus,ixPriority,ixFixFor,dtLastUpdated,ixCategory,sCategory";
-			var result = udf_request(url = "https://" & arguments.domain & ".fogbugz.com/api.asp?cmd=listCases&token=" & arguments.token & "&cols=" & column_lookup, prefix = true);
+			var result = udf_request(url = "https://" & arguments.domain & ".fogbugz.com/api.asp?cmd=listCases&token=" & arguments.token & "&max=" & arguments.max & "&cols=" & column_lookup, prefix = true);
 			if(result.statusCode == "200 OK") {return {success:true, list:xmlParse(result.fileContent)};}
 			return {success:false, error:result.errorDetail};
 		}
